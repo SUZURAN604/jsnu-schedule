@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!--
+  离线测试夹具：仿统一身份认证（Wisedu / i-Star CAS）登录页的结构。
+  结构照 2026-10 实际抓到的页面来：密钥和 flowkey 都是 p 标签里的纯文本，
+  不是 input 的 value —— 解析器用 fieldValue() 按「id 后面的文本」取值。
+  这里只保留解析器真正读的东西：login-croypto（base64 的 AES-128 密钥）、
+  login-page-flowkey（execution 值）、login-error-code（失败时才被填上错误码）。
+  其余都是噪声，用来模拟真实页面里那一堆无关脚本。
+
+  注意：注释里不要写带引号的标签样例 —— 解析器是按 id 属性找值的，
+  注释里的假 id 会被它先匹配到（这个坑踩过一次）。
+-->
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>统一身份认证平台</title>
+</head>
+<body>
+<div class="login-wrap">
+  <form method="post">
+    <h2>统一身份认证平台</h2>
+    <p id="login-croypto">MDEyMzQ1Njc4OWFiY2RlZg==</p>
+    <p id="login-page-flowkey">0000-1111-2222-3333-示例示例示例示例</p>
+    <p id="login-error-code"></p>
+
+    <label for="username">学号</label>
+    <input type="text" id="username" name="username" autocomplete="username" />
+    <label for="password">密码</label>
+    <input type="password" id="password" name="password" autocomplete="current-password" />
+    <label for="captcha">验证码（可为空）</label>
+    <input type="text" id="captcha" name="captcha" />
+
+    <input type="hidden" id="execution" name="execution" value="0000-1111-2222-3333-示例示例示例示例" />
+    <input type="hidden" name="_eventId" value="submit" />
+    <input type="hidden" name="type" value="UsernamePassword" />
+    <input type="hidden" id="login-type" value="UsernamePassword" />
+
+    <button type="submit">登录</button>
+  </form>
+
+  <p class="tip">请使用学号登录。忘记密码请到信息化建设与管理处办理。</p>
+  <p class="tip">为保障账号安全，请勿在公共设备上勾选「记住我」。</p>
+</div>
+
+<!-- 真实页面里内嵌了各学校的提示脚本，解析器刻意不去扫 alert()，
+     就是被下面这种无关文案坑过。这里保留一条，防止以后又改回去。 -->
+<script>
+  var errorCode = document.getElementById("login-error-code").innerText;
+  function checkLogin() {
+    if (!document.getElementById("username").value) {
+      alert('请先登录 pay.stu.edu.cn 缴纳学费');
+      return false;
+    }
+    return true;
+  }
+</script>
+</body>
+</html>

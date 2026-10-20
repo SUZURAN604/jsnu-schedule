@@ -1,0 +1,19 @@
+{
+  "name": "jsnu-schedule",
+  "version": "1.0.0",
+  "private": true,
+  "description": "江苏师范大学（强智 jsxsd）课表查询与上课提醒技能",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test tests/parser.test.js"
+  },
+  "files": [
+    "skills/",
+    "README.md",
+    "LICENSE"
+  ]
+}

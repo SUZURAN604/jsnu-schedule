@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<!--
+  离线测试夹具：仿「强智科技 jsxsd」课表页（xskb_list.do）的结构。
+  这里的课程、教师、教室、周次全部是编的，不对应任何真实课表。
+  结构要点（解析器依赖它们）：
+    · 真课表在 id 为 timetable 的那张表里，同页还有 dataTables（课程清单）要排除；
+    · 每个课程单元格里有隐藏的 kbcontent1（简版）和可见的 kbcontent（详版）；
+    · 详版每一行是 font 带 title 属性的写法；
+    · 行首单元格是「第N小节 / 第N-M小节」这种节次标签；
+    · 表头是「星期一 … 星期日」。
+-->
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>学期理论课表</title>
+  <style>
+    body { font-family: "Microsoft YaHei", sans-serif; font-size: 12px; }
+    table.Nsb_r_list { border-collapse: collapse; width: 100%; }
+    table.Nsb_r_list th, table.Nsb_r_list td { border: 1px solid #999; padding: 4px; vertical-align: top; }
+    div.kbcontent1 { display: none; }
+    font { font-size: 12px; line-height: 18px; }
+  </style>
+</head>
+<body>
+<div class="Nsb_r_list Nsb_table_title">2026-2027学年 第一学期 理论课表（测试夹具，数据均为虚构）</div>
+
+<!-- 课程清单表：解析时必须被排除，否则「课程名称 / 授课教师」这些表头会被当成课 -->
+<table id="dataTables" class="Nsb_r_list">
+  <thead>
+    <tr><th>课程名称</th><th>课程编号</th><th>授课教师</th><th>上课班级</th><th>学分</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>高等数学</td><td>MATH1001</td><td>张三</td><td>示例班</td><td>4</td></tr>
+    <tr><td>大学英语</td><td>ENGL1002</td><td>李四</td><td>示例班</td><td>3</td></tr>
+    <tr><td>线性代数</td><td>MATH1003</td><td>王五</td><td>示例班</td><td>3</td></tr>
+  </tbody>
+</table>
+
+<table id="timetable" class="Nsb_r_list Nsb_table">
+  <thead>
+    <tr>
+      <th>节次</th>
+      <th>星期一</th>
+      <th>星期二</th>
+      <th>星期三</th>
+      <th>星期四</th>
+      <th>星期五</th>
+      <th>星期六</th>
+      <th>星期日</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>第1小节</td>
+      <td>
+        <div class="kbcontent1">高等数学<br>1-16周<br>A101</div>
+        <div class="kbcontent">
+          <font title='课程名称'>高等数学</font><br>
+          <font title='教师'>张三</font><br>
+          <font title='周次(节次)'>1-16周(1-2节)</font><br>
+          <font title='教室'>A101</font>
+        </div>
+      </td>
+      <td></td>
+      <td>
+        <div class="kbcontent1">大学英语<br>1-16周<br>B203</div>
+        <div class="kbcontent">
+          <font title='课程名称'>大学英语</font><br>
+          <font title='教师'>李四</font><br>
+          <font title='周次(节次)'>1-16周(1-2节)</font><br>
+          <font title='教室'>B203</font>
+        </div>
+      </td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>第3-4小节</td>
+      <td></td>
+      <td>
+        <div class="kbcontent1">线性代数<br>1-16周<br>C305</div>
+        <div class="kbcontent">
+          <font title='课程名称'>线性代数</font><br>
+          <font title='教师'>王五</font><br>
+          <font title='周次(节次)'>1-16周(3-4节)</font><br>
+          <font title='教室'>C305</font>
+        </div>
+      </td>
+      <td></td>
+      <td>
+        <div class="kbcontent1">大学物理<br>1-8周<br>D102</div>
+        <div class="kbcontent">
+          <font title='课程名称'>大学物理</font><br>
+          <font title='教师'>赵六</font><br>
+          <font title='周次(节次)'>1-8周(3-4节)</font><br>
+          <font title='教室'>D102</font>
+        </div>
+        ---------------------
+        <div class="kbcontent1">物理实验<br>9-16周<br>E201</div>
+        <div class="kbcontent">
+          <font title='课程名称'>物理实验</font><br>
+          <font title='教师'>孙七</font><br>
+          <font title='周次(节次)'>9-16周(3-4节)</font><br>
+          <font title='教室'>E201</font>
+        </div>
+      </td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>第5小节</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>
+        <div class="kbcontent1">体育<br>1-16周(单)<br>操场</div>
+        <div class="kbcontent">
+          <font title='课程名称'>体育</font><br>
+          <font title='教师'>周八</font><br>
+          <font title='周次(节次)'>1-16周(单)(5节)</font><br>
+          <font title='教室'>操场</font>
+        </div>
+      </td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- 填充到 2000 字节以上：isTimetablePage 用「页面足够长 + 带课表表格」当判据，
+     太短的残页会被判成解析失败。下面是教务页常见的页脚噪声。 -->
+<div class="Nsb_r_list Nsb_table_footer">
+  <p>说明：本页面由教务管理系统自动生成，仅供本人查询使用。</p>
+  <p>选课、退课、调课请以教务系统内的实际状态为准；本页面的周次与节次以「教学作息时间表」为准。</p>
+  <p>常见问题：</p>
+  <ul>
+    <li>课表为空：请先确认当前学期是否已选课，或学期切换是否正确。</li>
+    <li>周次不对：请检查「开学第一周的周一」这一设置。</li>
+    <li>节次不对：请核对教务处发布的教学作息时间表（本仓库 README 里有完整的一份）。</li>
+  </ul>
+  <p>技术支持：信息化建设与管理处。</p>
+</div>
+</body>
+</html>

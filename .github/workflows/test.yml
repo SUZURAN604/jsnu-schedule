@@ -1,0 +1,21 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: 离线测试（不联网、不需要账号）
+        # 显式给文件路径：Node 22 上 `node --test tests/` 会把目录当模块解析，
+        # 报 Cannot find module '.../tests'。
+        run: node --test tests/parser.test.js

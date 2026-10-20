@@ -1,0 +1,21 @@
+# 运行时状态：会话、课表缓存、已发提醒、调试 HTML
+data/
+*.session.json
+sent.json
+runtime.json
+last-kb.html
+tmp/
+
+# 凭据：永远不要提交
+.env
+.env.*
+*.pem
+*.key
+
+# 编辑器 / 系统
+node_modules/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

@@ -1,0 +1,94 @@
+{
+  "id": "jsnu-schedule",
+  "name": "课表（江师大）",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "enabledByDefault": false,
+  "category": "utility",
+  "description": "登录江苏师范大学教务管理系统（强智科技 jsxsd），查询课表并按上课时间提前提醒。",
+  "author": "contributors",
+  "homepage": "",
+  "requires": [],
+  "capabilities": [],
+  "permissions": [
+    "web_fetch"
+  ],
+  "settings": {
+    "enabled": true,
+    "studentId": "",
+    "password": "",
+    "baseUrl": "http://jsnujw.jsnu.edu.cn",
+    "casUrl": "https://sid.jsnu.edu.cn",
+    "advanceMinutes": 30,
+    "termStart": "",
+    "pushEnabled": true,
+    "pushTarget": ""
+  },
+  "configSchema": {
+    "enabled": {
+      "type": "boolean",
+      "label": "启用课表功能",
+      "description": "关掉后模型看不到这几个工具，也不再推送提醒。",
+      "default": true
+    },
+    "studentId": {
+      "type": "string",
+      "label": "学号",
+      "description": "教务系统登录用的学号。只存在本机 data 目录。",
+      "default": ""
+    },
+    "password": {
+      "type": "string",
+      "label": "密码",
+      "secret": true,
+      "description": "教务系统密码。只存在本机 data 目录，不进聊天记录。",
+      "default": ""
+    },
+    "baseUrl": {
+      "type": "string",
+      "label": "教务系统地址",
+      "description": "一般不用改，默认 http://jsnujw.jsnu.edu.cn",
+      "default": "http://jsnujw.jsnu.edu.cn"
+    },
+    "casUrl": {
+      "type": "string",
+      "label": "统一身份认证地址",
+      "description": "一般不用改，默认 https://sid.jsnu.edu.cn",
+      "default": "https://sid.jsnu.edu.cn"
+    },
+    "advanceMinutes": {
+      "type": "number",
+      "label": "提前多少分钟提醒",
+      "description": "默认 30 分钟，允许 0~180。",
+      "default": 30
+    },
+    "pushEnabled": {
+      "type": "boolean",
+      "label": "主动提醒",
+      "description": "到点前通过 QQ 主动发一条提醒。",
+      "default": true
+    },
+    "termStart": {
+      "type": "string",
+      "label": "开学第一周的周一",
+      "description": "可选，格式 2026-09-07。填了才能在没有教务系统「当前周」时自己算周次。",
+      "default": ""
+    },
+    "pushTarget": {
+      "type": "string",
+      "label": "提醒推送到",
+      "description": "会话 key：私聊 private:QQ号，群聊 group:群号。留空则不推送（只做被动查询）。",
+      "default": ""
+    }
+  },
+  "prompt": {
+    "sections": [
+      {
+        "id": "jsnu-schedule",
+        "title": "课表（江师大）",
+        "priority": 45,
+        "content": "你能查主人的课表（江苏师范大学教务系统，工具名见函数列表）。\n\n什么时候用：主人问「今天有课吗」「下节课是什么」「这周课表」「明天要带什么书」这类问题时，直接查，不要猜。\n\n说话方式：查完用口语讲，别把表格原样贴出来。比如「下午两点高数，A101，周老师」而不是罗列字段。只有主人明确要「完整课表」时才按天列出来。\n\n出错时：登录失败（密码改了/系统维护）就把错误如实说一句，并提醒主人去设置里改密码；不要连着重试，教务系统连续失败会锁。"
+      }
+    ]
+  }
+}
