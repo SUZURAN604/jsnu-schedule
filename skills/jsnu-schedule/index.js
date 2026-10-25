@@ -18,7 +18,7 @@ import crypto from 'node:crypto';
 
 // 状态目录。装进宿主时用宿主自己的 DATA_DIR（<install>/src/config.js）；
 // 单独跑（离线测试、别的宿主）时退回 QQ_AGENT_DATA_DIR 或 ./data，
-// 这样这个文件不依赖仓库里不存在的模块也能 import。
+// 这样这个文件不依赖宿主里的模块也能 import —— 仓库里没有 src/config.js。
 let DATA_DIR = String(process.env.QQ_AGENT_DATA_DIR || '').trim();
 if (!DATA_DIR) {
   try {
@@ -978,23 +978,37 @@ export async function setup(api) {
   api.registerTool({
     id: 'jsnu_week',
     name: '本周课表',
-    description: '查询本周完整课表（周一到周日）。主人问「这周课表」「明天上什么课」「周几有课」时用。',
+    description: '查询本周完整课表（周一到周日）。主人问「这周课表」「周几有课」时用。⚠️ 注意：周日问「明天的课」时明天属于下周，不要用本工具回答——改用 jsnu_next（它会按目标日期算周次）。',
     category: 'query',
     icon: '🗓️',
     defaultEnabled: true,
-    parameters: { type: 'object', properties: {} },
-    async execute(ctx) {
+    parameters: {
+      type: 'object',
+      properties: {
+        offset: { type: 'number', description: '周偏移：0=本周（默认），1=下周，-1=上周。主人问「下周课表」「上星期的课」时用。' }
+      }
+    },
+    async execute(ctx, args = {}) {
       try {
         const { s, data } = await loadForTool(api, ctx);
-        const week = weekOf(s, new Date());
+        const offset = Math.max(-4, Math.min(4, Math.round(Number(args.offset) || 0)));
+        // 锚定本周的周一：周次一律以「该周的周一」计算，避免周日（本周第7天）
+        // 加 offset=1 时落到下下周的诡异结果。
+        const now = new Date();
+        const mondayThis = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (weekdayOf(now) - 1));
+        const anchor = new Date(mondayThis.getFullYear(), mondayThis.getMonth(), mondayThis.getDate() + offset * 7);
+        const week = weekOf(s, anchor);
+        const label = offset === 0 ? (week ? `第 ${week} 周` : '本周')
+          : offset > 0 ? (week ? `下${offset > 1 ? ` ${offset} ` : ''}一周（第 ${week} 周）` : `下${offset > 1 ? ` ${offset} ` : ''}一周`)
+          : (week ? `上${offset < -1 ? ` ${-offset} ` : ''}一周（第 ${week} 周）` : `上${offset < -1 ? ` ${-offset} ` : ''}一周`);
         const blocks = [];
         for (let wd = 1; wd <= 7; wd++) {
           const list = coursesOn(data.courses, wd, week);
           if (!list.length) continue;
           blocks.push(`${WEEKDAY_CN[wd]}：\n${list.map((c) => `  · ${describe(c)}`).join('\n')}`);
         }
-        if (!blocks.length) return ok(`这周没有课。${weekNote(s, new Date())}`);
-        return ok(`${week ? `第 ${week} 周` : '本周'}课表：\n${blocks.join('\n')}`);
+        if (!blocks.length) return ok(`${label}没有课。${weekNote(s, anchor)}`);
+        return ok(`${label}课表：\n${blocks.join('\n')}`);
       } catch (error) {
         return fail(error?.message || String(error));
       }
@@ -1004,7 +1018,7 @@ export async function setup(api) {
   api.registerTool({
     id: 'jsnu_next',
     name: '下一节课',
-    description: '看接下来要上的那节课（今天还没上的最近一节，今天没有了就看明天）。主人问「下节课是什么」「几点上课」「马上要带什么书」时用。',
+    description: '看接下来要上的那节课（今天还没上的最近一节，今天没有了就看明天，可以一直往后看到下周）。主人问「下节课是什么」「几点上课」「马上要带什么书」「明天有什么课」时用。',
     category: 'query',
     icon: '⏭️',
     defaultEnabled: true,
@@ -1013,9 +1027,9 @@ export async function setup(api) {
       try {
         const { s, data } = await loadForTool(api, ctx);
         const now = new Date();
-        const week = weekOf(s, now);
         const nowMin = now.getHours() * 60 + now.getMinutes();
-        const todayLeft = coursesOn(data.courses, weekdayOf(now), week)
+        const todayWeek = weekOf(s, now);
+        const todayLeft = coursesOn(data.courses, weekdayOf(now), todayWeek)
           .filter((c) => toMin(SLOT_START.get(c.slots[0])) > nowMin);
         if (todayLeft.length) {
           const c = todayLeft[0];
@@ -1023,15 +1037,22 @@ export async function setup(api) {
           const left = toMin(startText) - nowMin;
           return ok(`下一节是《${c.name}》${c.room ? `，${c.room}` : ''}${c.teacher ? `，${c.teacher}` : ''}，${startText} 开始（还有 ${left} 分钟）。`);
         }
-        for (let step = 1; step <= 7; step++) {
-          const wd = ((weekdayOf(now) - 1 + step) % 7) + 1;
+        // 从明天起往后找。⚠️ 周次必须按【目标日期】算，不能沿用今天的：
+        // 周日问「明天」，明天已是下一周的周一 —— 用今天的周次去查下一周的课，
+        // 单双周/隔周课会整体错一周（周日问明天的课，答成本周周一的课）。
+        for (let step = 1; step <= 14; step++) {
+          const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + step);
+          const wd = weekdayOf(date);
+          const week = weekOf(s, date);          // ← 关键修复：每个候选日各自算周次
           const list = coursesOn(data.courses, wd, week);
           if (!list.length) continue;
           const c = list[0];
-          const when = step === 1 ? '明天' : WEEKDAY_CN[wd];
+          const when = step === 1 ? '明天'
+            : step === 2 ? '后天'
+            : `${WEEKDAY_CN[wd]}（${date.getMonth() + 1}月${date.getDate()}日${week ? `，第${week}周` : ''}）`;
           return ok(`今天没课了。${when}第一节是《${c.name}》${c.room ? `，${c.room}` : ''}，${SLOT_START.get(c.slots[0])} 开始。`);
         }
-        return ok(`接下来一周都没课。${weekNote(s, now)}`);
+        return ok(`接下来两周都没课。${weekNote(s, now)}`);
       } catch (error) {
         return fail(error?.message || String(error));
       }

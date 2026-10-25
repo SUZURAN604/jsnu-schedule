@@ -18,4 +18,4 @@ jobs:
       - name: 离线测试（不联网、不需要账号）
         # 显式给文件路径：Node 22 上 `node --test tests/` 会把目录当模块解析，
         # 报 Cannot find module '.../tests'。
-        run: node --test tests/parser.test.js
+        run: node --test tests/parser.test.js tests/tools.test.js

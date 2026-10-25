@@ -1,5 +1,8 @@
 # 运行时状态：会话、课表缓存、已发提醒、调试 HTML
 data/
+# 本地备份 / 升级前快照
+*.bak
+*.bak-*
 *.session.json
 sent.json
 runtime.json

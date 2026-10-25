@@ -1,6 +1,6 @@
 {
   "name": "jsnu-schedule",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "江苏师范大学（强智 jsxsd）课表查询与上课提醒技能",
   "type": "module",
@@ -9,7 +9,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "node --test tests/parser.test.js"
+    "test": "node --test tests/parser.test.js tests/tools.test.js"
   },
   "files": [
     "skills/",
